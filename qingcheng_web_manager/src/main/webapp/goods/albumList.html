@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        .avatar-uploader .el-upload {
+            border: 1px dashed #d9d9d9;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .avatar-uploader .el-upload:hover {
+            border-color: #409EFF;
+        }
+        .avatar-uploader-icon {
+            font-size: 28px;
+            color: #8c939d;
+            width: 178px;
+            height: 178px;
+            line-height: 178px;
+            text-align: center;
+        }
+        .avatar {
+            width: 178px;
+            height: 178px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="content-header">
+        <h1>管理<small>album管理</small></h1>
+        <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item>管理</el-breadcrumb-item>
+            <el-breadcrumb-item>album管理</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <div class="app-container">
+        <div class="box">
+            <div class="filter-container-1">
+                <!--查询表单-->
+                <el-form :inline="true">
+                    <el-button type="primary" class="butT" @click="formVisible=true;pojo={};imageUrl=''">上传图片</el-button>
+                    <el-button type="primary" class="butT" @click="returnParent()">返回上级</el-button>
+                </el-form>
+            </div>
+
+            <div class="filter-container-1">
+                <el-form :inline="true" :model="formInline" border class="demo-form-inline">
+                    <el-form-item v-for="item in albumData.imageItems">
+                        <div style="text-align: center;border:1px rgb(228, 228, 228) solid;background: rgb(249, 250, 252)">
+                            <img :src="item.url" width="290px" height="300px"/>
+                        </div>
+                        <div style="text-align: center;border:1px rgb(228, 228, 228) solid;background: rgb(249, 250, 252)">
+                            <el-button type="primary" size="small" round>转移图片</el-button>
+                            <el-button type="danger" size="small" @click="dele(item.uid)" round>删除图片</el-button>
+                        </div>
+                    </el-form-item>
+                </el-form>
+            </div>
+
+            <div>
+                <el-dialog title="图片上传" :visible.sync="formVisible" width="40%">
+                    <el-form  label-width="80px">
+                        <el-form-item label="选择图片">
+                            <el-upload
+                                    class="avatar-uploader"
+                                    action="/upload/native.do"
+                                    :show-file-list="false"
+                                    :on-success="handleAvatarSuccess"
+                                    :before-upload="beforeAvatarUpload">
+                                <img v-if="imageUrl" :src="imageUrl" class="avatar">
+                                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                            </el-upload>
+                        </el-form-item>
+
+                        <el-form-item>
+                            <el-button @click="formVisible = false">取 消</el-button>
+                            <el-button type="primary" @click="save()">确 定</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-dialog>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+<script src="/js/vue.js"></script>
+<script src="/js/axios.js"></script>
+<script src="/js/elementui.js"></script>
+<script src="/js/util.js"></script>
+<script>
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                albumId: '',
+                albumData: {},
+                images: [],
+                formInline: {},
+                formVisible:false,
+                pojo:{},
+                imageUrl:''
+            }
+        },
+        created() {
+            this.albumId = getQueryString('id');
+            this.fetch();
+        },
+        methods: {
+            fetch() {
+                axios.get(`/album/findById.do?id=` + this.albumId).then(response => {
+                    this.albumData = response.data;
+                    this.albumData.imageItems = JSON.parse(this.albumData.imageItems);
+
+                })
+            },
+            save(){
+              this.pojo.id = this.albumId;
+              this.pojo.imageItems = this.imageUrl;
+              axios.post("/album/updateImage.do",this.pojo).then(response=>{
+                  this.fetch();
+                  this.formVisible = false;//关闭窗口
+              })
+            },
+            dele(id){
+                //1.获取当前图片Id
+                this.pojo.id = this.albumId;
+                //2.传入图片id与图片子列表Id
+                axios.get(`/album/deleteImage.do?id=${this.pojo.id}&imageItemsUid=${id}`).then(response=>{
+                    this.fetch();
+                })
+            },
+            returnParent(){
+                location.href="album.html";
+            },
+            handleAvatarSuccess(res, file) {
+                this.imageUrl = file.response;
+            },
+            beforeAvatarUpload(file) {
+                const isJPG = file.type === 'image/jpeg';
+                const isLt2M = file.size / 1024 / 1024 < 2;
+
+                if (!isJPG) {
+                    this.$message.error('上传头像图片只能是 JPG 格式!');
+                }
+                if (!isLt2M) {
+                    this.$message.error('上传头像图片大小不能超过 2MB!');
+                }
+                return isJPG && isLt2M;
+            }
+        },
+
+    })
+</script>
+</html>
