@@ -4,6 +4,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.qingcheng.entity.PageResult;
 import com.qingcheng.entity.Result;
 import com.qingcheng.pojo.order.Order;
+import com.qingcheng.pojo.order.Sellers;
 import com.qingcheng.service.order.OrderService;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,4 +61,13 @@ public class OrderController {
         return new Result();
     }
 
+    /**
+     * 根据sellers-Id查询
+     * @param id
+     * @return
+     */
+    @GetMapping("/findSellersById")
+    public Sellers findSellersById(String id){
+        return orderService.findSellersById(id);
+    }
 }

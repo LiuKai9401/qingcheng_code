@@ -2,9 +2,12 @@ package com.qingcheng.service.impl;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.qingcheng.dao.OrderItemMapper;
 import com.qingcheng.dao.OrderMapper;
 import com.qingcheng.entity.PageResult;
 import com.qingcheng.pojo.order.Order;
+import com.qingcheng.pojo.order.OrderItem;
+import com.qingcheng.pojo.order.Sellers;
 import com.qingcheng.service.order.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.entity.Example;
@@ -17,6 +20,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderMapper orderMapper;
+
+    @Autowired
+    private OrderItemMapper orderItemMapper;
 
     /**
      * 返回全部记录
@@ -93,6 +99,27 @@ public class OrderServiceImpl implements OrderService {
      */
     public void delete(String id) {
         orderMapper.deleteByPrimaryKey(id);
+    }
+
+    /**
+     * 查询主订单与订单行明细
+     * @param id
+     * @return
+     */
+    public Sellers findSellersById(String id) {
+        //1.创建组合实体类返回
+        Sellers sellers = new Sellers();
+        //2.查询主订单数据，根据id查询
+        Order order = orderMapper.selectByPrimaryKey(id);
+        //3.查询子订单数据，根据主订单id查询
+        Example example = new Example(OrderItem.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("orderId",id);
+        List<OrderItem> orderItems = orderItemMapper.selectByExample(example);
+        //4.封装组合实体类
+        sellers.setOrder(order);
+        sellers.setOrderItemList(orderItems);
+        return sellers;
     }
 
     /**
