@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>订单列表</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div id="app">
+
+    <div class="content-header">
+        <h1>订单管理<small>订单列表</small></h1>
+        <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item>管理</el-breadcrumb-item>
+            <el-breadcrumb-item>订单列表</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+
+    <div class="app-container">
+        <div class="box">
+            <div class="filter-container">
+                <el-button @click="sendGood()" size="mini" type="primary" size="small">批量发货</el-button>
+
+                <template>
+                    <el-table
+                            height="650"
+                            stripe
+                            ref="multipleTable"
+                            :data="tableData"
+                            border
+                            tooltip-effect="dark"
+                            style="width: 100%"
+                            @selection-change="handleSelectionChange"
+                            :header-cell-style="{'text-align':'center'}"
+                            :cell-style="{'text-align':'center'}">
+                        <el-table-column
+                                type="selection"
+                                width="55">
+                        </el-table-column>
+                        <el-table-column
+                                prop="id"
+                                label="订单编号"
+                                >
+                        </el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                label="提交时间"
+                                >
+                        </el-table-column>
+                        <el-table-column
+                                prop="username"
+                                label="用户账号"
+                                show-overflow-tooltip>
+                        </el-table-column>
+                        <el-table-column
+                                prop="payMoney"
+                                label="订单金额">
+                        </el-table-column>
+                        <el-table-column label="支付方式">
+                            <template slot-scope="scope">{{scope.row.payType==1?'在线支付':'货到付款'}}</template>
+                        </el-table-column>
+                        <el-table-column label="订单来源">
+                            <template slot-scope="scope">{{checkSourceType(scope.row.sourceType)}}</template>
+                        </el-table-column>
+                        <el-table-column label="订单状态">
+                            <template slot-scope="scope">{{checkOrderStatus(scope.row.orderStatus)}}</template>
+                        </el-table-column>
+                        <el-table-column label="发货状态">
+                            <template slot-scope="scope">{{scope.row.consignStatus==0?'未发货':'已发货'}}</template>
+                        </el-table-column>
+                        <el-table-column
+                                label="操作"
+                                align="center">
+                            <template slot-scope="scope">
+                                <el-button @click="select(scope.row.id)" size="mini" type="primary" size="small">查看订单</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+
+                    <el-row style="margin-top: 10px">
+                        <el-col :span="4">
+                            <div>
+                                <el-button @click="toggleAllSelection()">全选</el-button>
+                                <el-button @click="toggleSelection()">取消选择</el-button>
+                            </div>
+                        </el-col>
+                        <el-col :span="11">
+                            <div>
+                                <span>&nbsp;</span>
+                            </div>
+                        </el-col>
+                        <el-col :span="9">
+                                <el-pagination
+                                        style="float: right"
+                                        @size-change="fetch"
+                                        @current-change="fetch"
+                                        :current-page.sync="currentPage"
+                                        :page-sizes="[10, 40, 60, 100]"
+                                        :page-size.sync="pageSize"
+                                        layout="total, sizes, prev, pager, next, jumper"
+                                        :total="total">
+                                </el-pagination>
+                        </el-col>
+                    </el-row>
+                </template>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+<script src="/js/vue.js"></script>
+<script src="/js/elementui.js"></script>
+<script src="/js/axios.js"></script>
+<script>
+    new Vue({
+        el: "#app",
+        data(){
+            return{
+                tableData:[],//返回结果集合
+                currentPage:1,//当前页
+                pageSize:10,//每页大小
+                total:0,//返回的总记录数
+                ids:[],//用于接收checkbox选择id
+            }
+        },
+        methods:{
+            fetch(){
+                axios.get(`/order/findPage.do?page=${this.currentPage}&size=${this.pageSize}`).then(response=>{
+                    this.total = response.data.total;
+                    this.tableData = response.data.rows;
+                })
+            },
+            sendGood(){
+                if (this.ids.length>0){
+                    location.href="/order/orderSendGoods.html?ids="+this.ids;
+                }else {
+                    this.$message.error('请先勾选需要发货订单！');
+                }
+            },
+            toggleSelection(){
+                this.$refs.multipleTable.clearSelection();
+            },
+            toggleAllSelection(){
+                this.$refs.multipleTable.toggleAllSelection();
+            },
+            /**
+             * 勾选复选框，当发生变化时，每次都置空之前的数组数据，重新遍历填充
+             * @param rows
+             */
+            handleSelectionChange(rows){
+                this.ids =[];
+                rows.forEach(row=>{
+                    this.ids.push(row.id)
+                })
+            },
+            checkSourceType(id){
+               switch (id) {
+                    case "1":
+                        return "web";
+                        break;
+                   case "2":
+                       return "app";
+                       break;
+                   case "3":
+                       return "微信公众号";
+                       break;
+                   case "4":
+                       return "微信小程序";
+                       break;
+                   case "5":
+                       return "H5手机页面";
+                       break;
+                   default:
+                       return "";
+                       break;
+               }
+            },
+            checkOrderStatus(id){
+                switch (id) {
+                    case "0":
+                        return "待付款";
+                        break;
+                    case "1":
+                        return "待发货"
+                        break;
+                    case "2":
+                        return "已发货"
+                        break;
+                    case "3":
+                        return "已完成"
+                        break;
+                    case "4":
+                        return "已关闭"
+                        break;
+                    default:
+                        return "";
+                        break;
+                }
+            }
+        },
+        created(){
+           this.fetch();
+        }
+    })
+</script>
+</html>

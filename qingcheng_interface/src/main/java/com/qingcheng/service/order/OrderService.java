@@ -34,4 +34,6 @@ public interface OrderService {
     public void delete(String id);
 
     public Sellers findSellersById(String id);
+
+    void batchSendGoods(List<Order> orders);
 }

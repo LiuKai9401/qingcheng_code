@@ -70,4 +70,10 @@ public class OrderController {
     public Sellers findSellersById(String id){
         return orderService.findSellersById(id);
     }
+
+    @PostMapping("/batchSendGoods")
+    public Result batchSendGoods(@RequestBody List<Order> orders){
+        orderService.batchSendGoods(orders);
+        return new Result();
+    }
 }
