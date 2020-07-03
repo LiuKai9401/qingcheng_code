@@ -32,4 +32,5 @@ public interface OrderConfigService {
 
     public void delete(Integer id);
 
+    public void orderTimeOutLogic();
 }

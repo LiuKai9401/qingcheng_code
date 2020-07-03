@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>服务单详细</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+
+
+    </style>
+
+</head>
+<body style="background: #F9F9F9">
+<div id="app">
+
+    <div class="content-header">
+        <h1>管理<small>退货申请管理</small></h1>
+        <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item>管理</el-breadcrumb-item>
+            <el-breadcrumb-item>退货申请管理</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+
+    <div class="app-container">
+        <div class="box">
+            <div class="filter-container">
+
+                <div style="border: 1px solid rgba(228, 228, 228, 1)">
+                    <el-row :gutter="24">
+                        <el-col :span="24" >
+                            <div class="grid-content bg-purple" style="background: rgba(228, 228, 228, 1);border: 3px solid rgba(228, 228, 228, 1)">
+                                <div style="margin: 10px">
+                                    <span style="font-size: 12px">退货商品</span>
+                                </div>
+                            </div>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="24">
+                        <el-col :span="24">
+                            <div class="grid-content bg-purple">
+                                <el-table :data="tableData" border style="width: 100%" :header-cell-style="{'background':'#F9FAFC'}">
+                                    <el-table-column prop="id" label="商品图片" >
+                                        <template slot-scope="scope">
+                                            <img src="http://img10.360buyimg.com/popshop/jfs/t5662/36/8888655583/7806/1c629c01/598033b4Nd6055897.jpg">
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column prop="spu_id" label="商品名称" ></el-table-column>
+                                    <el-table-column prop="price" label="价格/货币" ></el-table-column>
+                                    <el-table-column prop="returnMoney" label="属性" ></el-table-column>
+                                    <el-table-column prop="linkman" label="数量" ></el-table-column>
+                                    <el-table-column prop="status" label="小计" ></el-table-column>
+                                </el-table>
+                            </div>
+                        </el-col>
+                    </el-row>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+<script src="/js/vue.js"></script>
+<script src="/js/axios.js"></script>
+<script src="/js/elementui.js"></script>
+<script>
+    new Vue({
+        el:'#app',
+        data(){
+            return{
+                tableData:[]
+            }
+        }
+    })
+</script>
+</html>

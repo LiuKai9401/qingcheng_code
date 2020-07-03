@@ -32,4 +32,7 @@ public interface ReturnOrderService {
 
     public void delete(Long id);
 
+    void agreeRefund(String id, Integer money, Integer adminId);
+
+    void rejectRefound(String id, String remark, Integer adminId);
 }

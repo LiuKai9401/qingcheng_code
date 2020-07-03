@@ -3,21 +3,38 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.qingcheng.dao.OrderConfigMapper;
+import com.qingcheng.dao.OrderLogMapper;
+import com.qingcheng.dao.OrderMapper;
 import com.qingcheng.entity.PageResult;
+import com.qingcheng.pojo.order.Order;
 import com.qingcheng.pojo.order.OrderConfig;
+import com.qingcheng.pojo.order.OrderLog;
 import com.qingcheng.service.order.OrderConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import src.com.qingcheng.util.IdWorker;
 import tk.mybatis.mapper.entity.Example;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-@Service
+@Service(interfaceClass = OrderConfigService.class)
 public class OrderConfigServiceImpl implements OrderConfigService {
 
     @Autowired
     private OrderConfigMapper orderConfigMapper;
 
+    @Autowired
+    private OrderMapper orderMapper;
+
+    @Autowired
+    private OrderLogMapper orderLogMapper;
+
+    @Autowired
+    private IdWorker idWorker;
     /**
      * 返回全部记录
      * @return
@@ -93,6 +110,45 @@ public class OrderConfigServiceImpl implements OrderConfigService {
      */
     public void delete(Integer id) {
         orderConfigMapper.deleteByPrimaryKey(id);
+    }
+
+    /**
+     * 订单超时处理逻辑
+     */
+    @Transactional
+    public void orderTimeOutLogic() {
+        //1.先获取系统配置中的超时参数设置：因为只有一条配置记录
+        OrderConfig orderConfig = orderConfigMapper.selectByPrimaryKey("1");
+        //2.获取参数设置的订单超时时数
+        Integer orderTimeout=orderConfig.getOrderTimeout();
+        //3.获取当前系统数据前60分钟的时间: minusMinutes表示当前时间减去值
+        LocalDateTime localDateTime = LocalDateTime.now().minusMinutes(orderTimeout);
+
+        //4.查询订单数据库中，小于得到的超时时间点订单，表示未付款订单
+        Example example = new Example(Order.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andLessThan("createTime",localDateTime);//创建时间小于超时时间订单
+        criteria.andEqualTo("orderStatus","0");//订单状态=待付款
+        criteria.andEqualTo("isDelete","0");//删除状态=未删除
+        List<Order> orderList = orderMapper.selectByExample(example);
+        for (Order order : orderList) {
+            //记录订单变动日志
+            OrderLog orderLog = new OrderLog();
+            orderLog.setId(idWorker.nextId()+"");//设置日志id
+            orderLog.setOperater("system");//设置操作员
+            orderLog.setOperateTime(new Date());//设置操作时间
+            orderLog.setOrderId(order.getId());//设置订单id
+            orderLog.setOrderStatus("4");//设置订单状态
+            orderLog.setPayStatus(order.getPayStatus());//设置付款状态
+            orderLog.setConsignStatus(order.getConsignStatus());//设置订单发货状态
+            orderLog.setRemarks("超时订单，系统自动关闭！");
+            orderLogMapper.insert(orderLog);
+
+            //更改订单状态
+            order.setOrderStatus("4");//订单状态修改为：已关闭
+            order.setCloseTime(new Date());//设置订单状态关闭时间
+            orderMapper.updateByPrimaryKeySelective(order);
+        }
     }
 
     /**
