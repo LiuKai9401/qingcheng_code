@@ -71,9 +71,37 @@ public class OrderController {
         return orderService.findSellersById(id);
     }
 
+    /**
+     * 批量发货
+     * @param orders
+     * @return
+     */
     @PostMapping("/batchSendGoods")
     public Result batchSendGoods(@RequestBody List<Order> orders){
         orderService.batchSendGoods(orders);
+        return new Result();
+    }
+
+    /**
+     * 合并订单
+     * @param mainOrder
+     * @param followOrder
+     * @return
+     */
+    @GetMapping("/mergeOrder")
+    public Result mergeOrder(String mainOrder ,String followOrder){
+        orderService.mergeOrder(mainOrder,followOrder);
+        return new Result();
+    }
+
+    /**
+     * 拆分订单
+     * @param mapList
+     * @return
+     */
+    @PostMapping("/splitOrder")
+    public Result splitOrder(@RequestBody List<Map<String,Object>> mapList){
+        orderService.splitOrder(mapList);
         return new Result();
     }
 }

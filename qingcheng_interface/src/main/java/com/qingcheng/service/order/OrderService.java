@@ -36,4 +36,8 @@ public interface OrderService {
     public Sellers findSellersById(String id);
 
     void batchSendGoods(List<Order> orders);
+
+    void mergeOrder(String mainOrder, String followOrder);
+
+    void splitOrder(List<Map<String, Object>> mapList);
 }

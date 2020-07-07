@@ -22,8 +22,9 @@
     <div class="app-container">
         <div class="box">
             <div class="filter-container">
+                <el-button @click="MergeDialogFormVisible=true" size="mini" type="primary" size="small">订单合并</el-button>
+                <el-button @click="SplitDialogFormVisible=true;splitData=[];splitOrderId='';split=[]" size="mini" type="primary" size="small">订单拆分</el-button>
                 <el-button @click="sendGood()" size="mini" type="primary" size="small">批量发货</el-button>
-
                 <template>
                     <el-table
                             height="650"
@@ -110,6 +111,78 @@
         </div>
     </div>
 
+    <!--dilog-->
+    <el-dialog title="合并订单" :visible.sync="MergeDialogFormVisible" width="40%" center>
+        <p style="display: flex;justify-content:center;font-size: small;color: #999999">当两个订单不一致时，合并后的订单信息（如：支付方式、配送方式、活动优惠等）以主订单为准。</p>
+        <div style="display: flex;justify-content: center">
+            <el-form  label-position="left" label-width="80px">
+                <el-form-item label="主订单">
+                    <el-select v-model="mainOrder" placeholder="请选择活动区域">
+                        <el-option v-for="id in ids" :key="id" :value="id" :label="id"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="从订单">
+                    <el-select v-model="followOrder" placeholder="请选择活动区域">
+                        <el-option v-for="id in ids" :key="id" :value="id" :label="id"></el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+        </div>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="MergeDialogFormVisible = false">取 消</el-button>
+            <el-button type="primary" @click="mergeOrder">确 定</el-button>
+        </div>
+    </el-dialog>
+
+    <!--dilog-->
+    <el-dialog title="拆分订单" :visible.sync="SplitDialogFormVisible" width="50" center>
+        <div style="display: flex;justify-content: center">
+            <el-form :inline="true" class="demo-form-inline">
+                <el-form-item label="需要拆分的订单:">
+                    <el-input v-model="splitOrderId" placeholder="输入订单号" clearable></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="orderById">查询</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+
+        <el-table
+                :data="splitData"
+                border
+                style="width: 100%"
+                height="400"
+                :header-cell-style="{'text-align':'center'}"
+                :cell-style="{'text-align':'center'}">
+            <el-table-column
+                    prop="name"
+                    label="商品名称"
+                    >
+            </el-table-column>
+            <el-table-column
+                    prop="price"
+                    label="价格"
+                    width="80">
+            </el-table-column>
+            <el-table-column
+                    prop="num"
+                    label="数量"
+                    width="80">
+            </el-table-column>
+                <el-table-column
+                    label="拆分数量" width="100">
+                    <template slot-scope="slot">
+                        <el-input v-model="slot.row.splitNum" placeholder="拆分数量"></el-input>
+                    </template>
+            </el-table-column>
+        </el-table>
+
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="SplitDialogFormVisible = false">取 消</el-button>
+            <el-button type="primary" @click="splitOrder">确 定</el-button>
+        </div>
+    </el-dialog>
+
 </div>
 </body>
 <script src="/js/vue.js"></script>
@@ -125,13 +198,26 @@
                 pageSize:10,//每页大小
                 total:0,//返回的总记录数
                 ids:[],//用于接收checkbox选择id
+                MergeDialogFormVisible:false,//diaLog默认隐藏
+                SplitDialogFormVisible:false,//拆分订单dialog
+                mainOrder:"",//主订单id号
+                followOrder:"",//从订单id号
+                splitOrderId:"",//查询需拆分订单号
+                splitData:[],
+                split:[]
             }
         },
         methods:{
             fetch(){
-                axios.get(`/order/findPage.do?page=${this.currentPage}&size=${this.pageSize}`).then(response=>{
+                axios.post(`/order/findPage.do?page=${this.currentPage}&size=${this.pageSize}`,{"isDelete":"0"}).then(response=>{
                     this.total = response.data.total;
                     this.tableData = response.data.rows;
+                })
+            },
+            orderById(){
+                axios.post(`/orderItem/findList.do`,{"orderId":this.splitOrderId}).then(response=>{
+                    this.splitData = response.data;
+
                 })
             },
             sendGood(){
@@ -139,6 +225,53 @@
                     location.href="/order/orderSendGoods.html?ids="+this.ids;
                 }else {
                     this.$message.error('请先勾选需要发货订单！');
+                }
+            },
+            splitOrder(){
+                this.splitData.forEach(value => {
+                    if (value.splitNum !=null){
+                        this.split.push({'id':value.id,'num': Number(value.splitNum)});
+                    }
+                });
+                if (this.split.length>0){
+                    //this.$alert(this.split);
+                    axios.post(`/order/splitOrder.do`,this.split).then(response=>{
+                        if(response.data.code==0){
+                            this.fetch();
+                            this.SplitDialogFormVisible=false;
+                        }else {
+                            this.$alert(`<div style='min-height: 500px;overflow: scroll;'>${response.data.message}</div>`,'错误提示',{
+                                confirmButtonText: '确定',
+                                dangerouslyUseHTMLString: true,
+                                callback:action=>{
+                                        this.splitOrderId=[];
+                                }
+                            });
+                        }
+
+                    })
+                }
+            },
+            mergeOrder(){
+                if(this.mainOrder.length>0 && this.followOrder.length>0){
+                    axios.get(`/order/mergeOrder.do?mainOrder=${this.mainOrder}&followOrder=${this.followOrder}`).then(rensopne=>{
+                            if(rensopne.data.code==0){
+                                this.$alert('提示', '订单合并成功', {
+                                    type:'success',
+                                    confirmButtonText: '确定',
+                                    callback: action =>{
+                                        this.fetch();
+                                        this.MergeDialogFormVisible = false;
+                                        this.mainOrder="";
+                                        this.followOrder="";
+                                    }
+                                });
+                            }else {
+                                this.$message.error(rensopne.data.message+"");
+                            }
+                    })
+                }else {
+                    this.$message.error("请先选择需要合并的订单！");
                 }
             },
             toggleSelection(){

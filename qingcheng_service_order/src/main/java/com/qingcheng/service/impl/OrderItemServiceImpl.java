@@ -118,7 +118,7 @@ public class OrderItemServiceImpl implements OrderItemService {
             }
             // 订单ID
             if(searchMap.get("orderId")!=null && !"".equals(searchMap.get("orderId"))){
-                criteria.andLike("orderId","%"+searchMap.get("orderId")+"%");
+                criteria.andEqualTo("orderId",searchMap.get("orderId"));
             }
             // 商品名称
             if(searchMap.get("name")!=null && !"".equals(searchMap.get("name"))){
