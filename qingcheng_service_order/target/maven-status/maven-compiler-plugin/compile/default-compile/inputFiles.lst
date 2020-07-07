@@ -1,6 +1,7 @@
 F:\qingcheng\qingcheng_parent\qingcheng_service_order\src\main\java\com\qingcheng\service\impl\OrderItemServiceImpl.java
 F:\qingcheng\qingcheng_parent\qingcheng_service_order\src\main\java\com\qingcheng\dao\OrderLogMapper.java
 F:\qingcheng\qingcheng_parent\qingcheng_service_order\src\main\java\com\qingcheng\service\impl\OrderConfigServiceImpl.java
+F:\qingcheng\qingcheng_parent\qingcheng_service_order\src\main\java\com\qingcheng\dao\CategoryReportMapper.java
 F:\qingcheng\qingcheng_parent\qingcheng_service_order\src\main\java\com\qingcheng\dao\ReturnOrderMapper.java
 F:\qingcheng\qingcheng_parent\qingcheng_service_order\src\main\java\com\qingcheng\service\impl\ReturnCauseServiceImpl.java
 F:\qingcheng\qingcheng_parent\qingcheng_service_order\src\main\java\com\qingcheng\service\impl\ReturnOrderItemServiceImpl.java
@@ -13,4 +14,5 @@ F:\qingcheng\qingcheng_parent\qingcheng_service_order\src\main\java\com\qingchen
 F:\qingcheng\qingcheng_parent\qingcheng_service_order\src\main\java\com\qingcheng\service\impl\OrderLogServiceImpl.java
 F:\qingcheng\qingcheng_parent\qingcheng_service_order\src\main\java\com\qingcheng\service\impl\ReturnOrderServiceImpl.java
 F:\qingcheng\qingcheng_parent\qingcheng_service_order\src\main\java\com\qingcheng\service\impl\OrderServiceImpl.java
+F:\qingcheng\qingcheng_parent\qingcheng_service_order\src\main\java\com\qingcheng\service\impl\CategoryReportServiceImpl.java
 F:\qingcheng\qingcheng_parent\qingcheng_service_order\src\main\java\com\qingcheng\service\impl\PreferentialServiceImpl.java
