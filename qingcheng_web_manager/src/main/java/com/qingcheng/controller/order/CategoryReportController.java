@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/categoryReport")
@@ -25,5 +26,16 @@ public class CategoryReportController {
     public List<CategoryReport> yesterday(){
         LocalDate date = LocalDate.of(2019,04,15);
         return categoryReportService.categoryReport(date);
+    }
+
+    /**
+     * 根据日期统计一级类目集合
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @GetMapping("/categoryCount")
+    public List<Map> categoryCount(String startDate, String endDate){
+        return categoryReportService.categoryCount(startDate,endDate);
     }
 }

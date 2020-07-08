@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service(interfaceClass = CategoryReportService.class)
 public class CategoryReportServiceImpl implements CategoryReportService {
@@ -35,5 +36,16 @@ public class CategoryReportServiceImpl implements CategoryReportService {
         for (CategoryReport categoryReport : categoryReportList) {
             categoryReportMapper.insert(categoryReport);
         }
+    }
+
+    /**
+     * 根据日期统计一级类目集合
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @Override
+    public List<Map> categoryCount(String startDate, String endDate) {
+        return categoryReportMapper.categoryCount(startDate,endDate);
     }
 }
